@@ -11,7 +11,10 @@ using Squared.Task;
 
 namespace Squared.PE {
     public static class PEInjector {
-        public static unsafe RemoteMemoryRegion Inject (Process process, PortableExecutable executable, IntPtr payloadArgument, Future<Int32> threadResultFuture, Future<UInt32> threadIdFuture) {
+        public static unsafe RemoteMemoryRegion Inject (
+            Process process, PortableExecutable executable, IntPtr payloadArgument, 
+            Future<Int32> threadResultFuture, Future<UInt32> threadIdFuture
+        ) {
             RemoteMemoryRegion region = null;
             using (var handle = Win32.OpenProcessHandle(
                 ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite |
@@ -31,6 +34,10 @@ namespace Squared.PE {
                 executable.ResolveImports();
 
                 foreach (var section in executable.Sections.Values) {
+                    // 0-byte remote memory read/write/protect operations will fail with an error.
+                    if (section.Size <= 0)
+                        continue;
+
                     fixed (byte* data = section.RawData) {
                         region.Write(
                             handle, section.VirtualAddress, section.Size, data

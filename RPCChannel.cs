@@ -134,7 +134,7 @@ namespace Squared.PE {
             : base(process, messageName) {
         }
 
-        public unsafe void Send (byte[] message, bool wantResponse) {
+        public unsafe void Send (byte[] message) {
             if (_Process == null)
                 throw new Exception("No remote process");
             if (RemoteThreadId == 0)
